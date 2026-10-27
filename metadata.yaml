@@ -1,0 +1,170 @@
+dataset: MMR short-window estimation - first real batch (ME 405 HW1 item 4)
+maintainer: Ramazan Batuhan Özcan (Bilkent University)
+created: 2026-10-27
+problem: 'Estimate resonance frequency, amplitude and phase of a magneto-mechanical
+  resonator (MMR) from short (50 ms) receive windows.
+
+  '
+source:
+  title: 'Supplementary Data for the Publication: Parameter Estimation for Model-Based
+    Sensing of Magneto-Mechanical Resonators'
+  authors:
+  - Sarah Reiß
+  - Tobias Knopp
+  - Justin Ackers
+  - Jonas Faltinath
+  - Fabian Mohn
+  - Marija Boberg
+  - Nora Timm
+  - Martin Möddel
+  repository: TUHH Open Research (TORE)
+  doi: 10.15480/882.16742
+  license: CC0 1.0
+  file_used: Exp1_MMRS.h5
+  related_paper: Reiss et al., Communications Physics 9 (2026), doi:10.1038/s42005-026-02884-1
+  related_code: https://github.com/IBIResearch/MMR-Parameter-Estimation (MIT)
+sensor_MMR_S:
+  excitation_frequency_hz: 811.0
+  rotor_radius_mm: 0.5
+  remanent_magnetization: 1.44e6
+  bandpass_hz:
+  - 600.0
+  - 2000.0
+raw_layout:
+  data: /data, Julia order (sample, channel, frame)
+  sampling_rate: /sequence/baseFrequency / /sequence/decimation
+  units_of_data: UNKNOWN - check README.pdf
+processing:
+  script: scripts/mmr_data.py, notebooks/hw1_item4_data_collection.ipynb
+  bandpass: 4th-order Butterworth, zero-phase (filtfilt), 600-2000 Hz
+  edge_cut_s: 0.05
+  window_s: 0.05
+  reference_segment_s: 0.2
+  min_relative_amplitude: 0.3
+  max_reference_residual: 0.5
+columns:
+  frame: frame index in raw file
+  channel: receive channel index
+  t_start_s: window start within the (edge-cut) frame [s]
+  n_samples: samples per window
+  fs_hz: sampling rate [Hz]
+  rel_amplitude: envelope at window centre / envelope peak - NOT a feature (target
+    in disguise)
+  snr_db_est: 20 log10(signal RMS / reference-fit residual RMS) [dB] - derived from
+    the fit, NOT a feature
+  tau_frame_s: decay time constant of the frame, from log-envelope line fit [s] -
+    NOT a feature
+  f_ref_hz: TARGET - frequency from 0.2 s reference fit [Hz]
+  A_ref: TARGET - amplitude at window centre, same units as raw data
+  phi_ref_rad: TARGET - phase at window's first sample [rad], in (-pi, pi]
+  ref_residual_rel: reference fit RMS residual / signal RMS - NOT a feature (from
+    the fit)
+features_file: processed/X_windows.npy
+feature_policy: Model input is X_windows.npy only. frame/channel/t_start_s are IDs;
+  channel, n_samples, fs_hz are constant; rel_amplitude, snr_db_est, tau_frame_s,
+  ref_residual_rel are derived from the reference fit.
+computed:
+  raw_file: Exp1_MMRS.h5
+  raw_sha256: 42d65a423d5f3e93380c620c7a5e7945ba530b7903d563f1da2883d1f01ce706
+  stored_shape:
+  - 50
+  - 3
+  - 122064
+  stored_dtype: float32
+  fs_hz: 61035.15625
+  n_frames: 50
+  n_channels: 3
+  samples_per_frame: 122064
+  kept_frames:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  - 13
+  - 14
+  - 15
+  - 16
+  - 17
+  - 18
+  - 19
+  - 20
+  - 21
+  - 22
+  - 23
+  - 24
+  - 25
+  - 26
+  - 27
+  - 28
+  - 29
+  - 30
+  - 31
+  - 32
+  - 33
+  - 34
+  - 35
+  - 36
+  - 37
+  - 38
+  - 39
+  - 40
+  - 41
+  - 42
+  - 43
+  - 44
+  - 45
+  - 46
+  - 47
+  - 48
+  - 49
+  channel_used: 0
+  processed_rows: 39
+  window_samples: 3052
+  cleaning_log:
+  - kind: improper format
+    stored:
+    - 50
+    - 3
+    - 122064
+    action: reordered to (frame, channel, sample), float64, fs = baseFrequency/decimation;
+      window samples stored in X_windows.npy
+  - kind: incorrect
+    clipping_frames: []
+    action: clipping flagged only; 4th-order Butterworth (600.0, 2000.0) Hz (filtfilt);
+      cut 3051 samples per edge. Odd 50 Hz harmonics inside the band remain.
+  - kind: incomplete
+    nan_frames: []
+    dead_frames: []
+    action: drop frames with NaN/Inf or with RMS < 10 % of median on all channels;
+      units of /data marked UNKNOWN in metadata
+  - kind: irrelevant or duplicated
+    duplicate_frames: []
+    channel: 0
+    action: drop exact duplicate frames; keep only the strongest channel
+  - kind: incorrect (labels)
+    rows_dropped: 0
+    action: drop rows whose reference-fit residual > 50 % of signal RMS
+  - kind: irrelevant or duplicated (columns)
+    constant:
+    - channel
+    - n_samples
+    - fs_hz
+    ids:
+    - frame
+    - channel
+    - t_start_s
+    target_in_disguise:
+    - rel_amplitude
+    - snr_db_est
+    - tau_frame_s
+    - ref_residual_rel
+    action: not used as features; kept only for filtering/stratifying
